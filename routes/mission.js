@@ -219,9 +219,8 @@ router.get('/unaccpetedlist', async (req, res) => {
 })
 //查看所有任务
 router.get('/worklist', async (req, res) => {
-  var msg = req.query || req.params;
-  var mission_statu = msg.mission_statu;
-  var mission_id = msg.mission_id;
+  var mission_statu = '';
+  var mission_id = '';
   var data = {}
   data.data = {}
   var queryAll = await query(missionSQL.queryAllTask)
@@ -250,6 +249,9 @@ router.get('/worklist', async (req, res) => {
     data.data = list;
     data.status = 0;
     data.msg = "查询所有任务成功"
+  }else if(taskall.length == 0){
+    data.msg = "暂无数据";
+    data.status = -1;
   }
   responseJSON(res, data);
 })
@@ -293,6 +295,82 @@ router.post('/details', async (req, res) => {
     data.data = ddata[i];
     data.status = 0;
     data.msg = "success"
+  }
+  responseJSON(res, data);
+})
+//查看推荐列表
+router.post('/recommend',async (req, res)=>{
+  var userID = req.body.user_id;
+  var max = await query(labelSQL.compared,[userID])
+  var arr = []
+  var data = {}
+  data.data = {}
+  //未接单超时任务自动更改任务状态
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
+  for(let i=0;i<max.length;i++){
+    arr = [
+      { label:'跑腿',value:max[i].help },
+      { label:'代取',value:max[i].take },
+      { label:'兼职',value:max[i].parttime },
+      { label:'技能',value:max[i].skill },
+    ]
+    arr.sort((a,b)=>{return b.value - a.value});
+    var like_param = arr[0].label
+    var second_param = arr[1].label
+    var third_param = arr[2].label
+    var forth_param = arr[3].label
+  }
+    var Data = []
+    var top = await query(missionSQL.top,[like_param])
+    var second = await query(missionSQL.top,[second_param])
+    var third = await query(missionSQL.top,[third_param])
+    var forth = await query(missionSQL.top,[forth_param])
+    for(let i = 0;i<top.length;i++){
+      Data.push(top[i]);
+    }
+    for(let i = 0;i<second.length;i++){
+      Data.push(second[i]);
+    }
+    for(let i = 0;i<third.length;i++){
+      Data.push(third[i]);
+    }
+    for(let i = 0;i<forth.length;i++){
+      Data.push(forth[i]);
+    }
+    data.data = Data;
+    data.status = 0;
+    data.msg = "success"
+    responseJSON(res, data);
+})
+//已被打工仔接收的正在进行的任务  ==作为雇主
+router.post('/accepted',async (req, res)=>{
+  var master = req.body.user_id;
+  var data = {}
+  data.data = {}
+  var str = []
+  var flag = false;
+  var outcome = await query(missionSQL.queryAllAccepted,[master])
+  for(let i=0;i<outcome.length;i++){
+    str[i] = outcome[i]
+    flag = true;
+  }
+  if(outcome.length == 0){
+    data.msg = "暂无数据";
+    data.status = -1;
+  }else if(flag == true){
+    data.data = str;
+    data.msg = "success";
+    data.status = 0;
   }
   responseJSON(res, data);
 })

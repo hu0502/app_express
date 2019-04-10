@@ -15,8 +15,16 @@ var MissionSQL = {
    achieve:'UPDATE mission set mission_statu=?,end_time=? WHERE mission_id=?',
    //如果任务超时未确认完成，把接收时间作为end_time
    //如果任务超时未被接单，把创建任务时间作为end_time 和 accept_time
-   //任务被点击次数+1
-   changeTimes:'UPDATE mission set times=? WHERE mission_id=?'
-
+   //任务被点击次数+1 ==用于显示浏览次数
+   changeTimes:'UPDATE mission set times=? WHERE mission_id=?',
+   //根据任务标签进行模糊查询
+   top:'SELECT * FROM mission WHERE label like ? and mission_statu = 0',
+   //除了关键字之外的模糊搜索
+   apartTop :'SELECT * FROM mission WHERE label not like ? and mission_statu = 0',
+   secondTop:'SELECT * FROM mission WHERE label like ? and mission_statu = 0',
+   thirdTop:'SELECT * FROM mission WHERE label like ? and mission_statu = 0',
+   forthTop:'SELECT * FROM mission WHERE label like ? and mission_statu = 0',
+   //查看所有被打工仔接收的且正在进行中的任务
+   queryAllAccepted : 'SELECT * FROM mission WHERE master = ? and mission_statu = 1',
 };
 module.exports = MissionSQL;

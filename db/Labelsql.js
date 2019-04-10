@@ -12,5 +12,8 @@ var LabelSQL = {
     Stake : 'UPDATE label set take=take+1 WHERE user_id = ?',
     Sparttime : 'UPDATE label set parttime=parttime+1 WHERE user_id = ?',
     Sskill : 'UPDATE label set skill=skill+1 WHERE user_id = ?',
+    //比较用户点击量的高的任务标签
+    compared:'SELECT * FROM label WHERE user_id = ?',
+   
 };
 module.exports = LabelSQL;
