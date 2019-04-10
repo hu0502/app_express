@@ -15,6 +15,8 @@ var MissionSQL = {
    achieve:'UPDATE mission set mission_statu=?,end_time=? WHERE mission_id=?',
    //如果任务超时未确认完成，把接收时间作为end_time
    //如果任务超时未被接单，把创建任务时间作为end_time 和 accept_time
+   //任务被点击次数+1
+   changeTimes:'UPDATE mission set times=? WHERE mission_id=?'
 
 };
 module.exports = MissionSQL;

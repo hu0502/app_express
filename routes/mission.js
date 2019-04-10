@@ -1,8 +1,10 @@
+var async = require('async');
 var express = require('express');
 var router = express.Router();
 var query = require('../db/DBConfig');
 var missionSQL = require('../db/Missionsql');
 var userSQL = require('../db/Usersql');
+var labelSQL = require('../db/Labelsql');
 var moment = require('moment');
 var responseJSON = function (res, ret) {
   if (typeof ret === 'undefined') {
@@ -157,23 +159,23 @@ router.post('/achieve', async (req, res) => {
       }
       data.status = 0;
       data.msg = "任务已完成"
-    } else if(flag == 2){
+    } else if (flag == 2) {
       data.status = -2;
       data.msg = "任务已完成，不能重复提交"
-    }else if (flag==3){
+    } else if (flag == 3) {
       _score = mdata[i].score;
       _master = mdata[i].master;
-      var query_master = await query(userSQL.getUserById,[_master])
-        for(let i=0;i<query_master.length;i++){
-          score = query_master[i].score + _score //任务超时把积分退还给雇主
-        }
-        await query(userSQL.updateScoreById,[score,_master])
-        var DATA = await query(missionSQL.details, [mission_id])
-        for (let i = 0; i < DATA.length; i++) {
-          data.data = DATA[i];
-        }
-        data.status = -3;
-        data.msg = "任务已超时，不能提交，下次加油"
+      var query_master = await query(userSQL.getUserById, [_master])
+      for (let i = 0; i < query_master.length; i++) {
+        score = query_master[i].score + _score //任务超时把积分退还给雇主
+      }
+      await query(userSQL.updateScoreById, [score, _master])
+      var DATA = await query(missionSQL.details, [mission_id])
+      for (let i = 0; i < DATA.length; i++) {
+        data.data = DATA[i];
+      }
+      data.status = -3;
+      data.msg = "任务已超时，不能提交，下次加油"
     }
   }
   responseJSON(res, data);
@@ -254,22 +256,41 @@ router.get('/worklist', async (req, res) => {
 //查看任务详情
 router.post('/details', async (req, res) => {
   var mid = req.body.mission_id;
+  var uid = req.body.user_id;//当前用户id 用于统计点击次数
   var data = {}
   data.data = {}
   var mission_statu = ''
-  var qDetail = await query(missionSQL.details, [mid])
-  if (qDetail) {
-    var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
-    if (qDetail.validtime < curtime) {
-      mission_statu = 3;
-      await query(missionSQL.changeTaskStatus, [mission_statu, mid]);
-    }
+  var Times = ''
+  var midIsExist = false;
+  /* var qDetail = await query(missionSQL.details, [mid])
+  var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+  if (qDetail.validtime < curtime) {
+    mission_statu = 3;
+    await query(missionSQL.changeTaskStatus, [mission_statu, mid]);
+  } */
+  var queryAll = await query(labelSQL.queryAll)
+  for(let i=0;i<queryAll.length;i++){
+    if(queryAll[i].user_id == uid) midIsExist = true;
   }
   var ddata = await query(missionSQL.details, [mid])
-  if (ddata) {
-    for (let i = 0; i < ddata.length; i++) {
-      data.data = ddata[i];
+  for (let i = 0; i < ddata.length; i++) {
+    Times = ddata[i].times +1;
+    if(midIsExist == true){
+      if(ddata[i].label == "跑腿") query(labelSQL.Shelp,[uid]) 
+      if(ddata[i].label == "代取") query(labelSQL.Stake,[uid]) 
+      if(ddata[i].label == "兼职") query(labelSQL.Sparttime,[uid]) 
+      if(ddata[i].label == "技能") query(labelSQL.Sskill,[uid]) 
+    }else{
+      if(ddata[i].label == "跑腿") query(labelSQL.Fhelp,[uid]) 
+      if(ddata[i].label == "代取") query(labelSQL.Ftake,[uid]) 
+      if(ddata[i].label == "兼职") query(labelSQL.Fparttime,[uid]) 
+      if(ddata[i].label == "技能") query(labelSQL.Fskill,[uid]) 
     }
+  }
+  query(missionSQL.changeTimes, [Times, mid])
+  var ddatas = await query(missionSQL.details, [mid])
+  for (let i = 0; i < ddatas.length; i++) {
+    data.data = ddata[i];
     data.status = 0;
     data.msg = "success"
   }
