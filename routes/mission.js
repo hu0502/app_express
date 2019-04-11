@@ -347,9 +347,28 @@ router.post('/recommend',async (req, res)=>{
     for(let i = 0;i<forth.length;i++){
       Data.push(forth[i]);
     }
-    data.data = Data;
-    data.status = 0;
-    data.msg = "success"
+    if(Data.length ==0){
+      var task = await query(missionSQL.queryAllStatu);
+      var unacceptTask = [];
+      var isQuery = false;
+      if (task) {
+        isQuery = true;
+        for (let i = 0; i < task.length; i++) {
+          unacceptTask[i] = task[i];
+        }
+      }
+      if (isQuery == true) {
+        data.data = unacceptTask;
+        data.status = 0;
+        data.msg = "查询未接单任务成功"
+      }
+
+    }else{
+      data.data = Data;
+      data.status = 0;
+      data.msg = "查询推荐任务成功"
+    }
+   
     responseJSON(res, data);
 })
 /* ******** 雇主 ******** */
