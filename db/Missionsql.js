@@ -24,7 +24,23 @@ var MissionSQL = {
    secondTop:'SELECT * FROM mission WHERE label like ? and mission_statu = 0',
    thirdTop:'SELECT * FROM mission WHERE label like ? and mission_statu = 0',
    forthTop:'SELECT * FROM mission WHERE label like ? and mission_statu = 0',
-   //查看所有被打工仔接收的且正在进行中的任务
+   
+   /* ******** 雇主 ******** */
+   //雇主发布的--未接单
+   getTask:'SELECT * FROM mission WHERE master = ? and mission_statu = 0',
+   //雇主发布的--正在进行的任务
    queryAllAccepted : 'SELECT * FROM mission WHERE master = ? and mission_statu = 1',
+   //雇主发布的--已完成的任务
+   queryAllDone : 'SELECT * FROM mission WHERE master = ? and mission_statu = 2',
+   //雇主发布的--已超时
+   overTime : 'SELECT * FROM mission WHERE master = ? and mission_statu = 3',
+    
+   /* ******** 打工仔 ******** */
+   //打工仔查询自已已接取的进行中的任务
+   getAccept:'SELECT * FROM mission WHERE slave = ? and mission_statu = 1',
+   //打工仔已完成的任务
+   getDone:'SELECT * FROM mission WHERE slave = ? and mission_statu = 2',
+   //打工仔已接取但已超时的任务
+   getTime:'SELECT * FROM mission WHERE slave = ? and mission_statu = 3'
 };
 module.exports = MissionSQL;

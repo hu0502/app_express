@@ -352,13 +352,62 @@ router.post('/recommend',async (req, res)=>{
     data.msg = "success"
     responseJSON(res, data);
 })
-//已被打工仔接收的正在进行的任务  ==作为雇主
-router.post('/accepted',async (req, res)=>{
+/* ******** 雇主 ******** */
+//雇主--已发布的所有未接单任务
+router.post('/master_status0', async (req, res) => {
+  var myTask = req.body;
+  var master = myTask.user_id;
+  var _res = res;
+  var mission_statu = '';
+  var mission_id = '';
+  var data = {}
+  data.data = {}
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
+  var myMission = await query(missionSQL.getTask, [master])
+  var list = [];
+  var isQuery = false;
+  if (myMission) {
+    isQuery = true;
+    for (let i = 0; i < myMission.length; i++) {
+      list[i] = myMission[i];
+    }
+  }
+  if (isQuery == true) {
+    data.data = list;
+    data.status = 0;
+    data.msg = "success"
+  }
+  //console.log(data.data)
+  responseJSON(_res, data);
+})
+//雇主发布的--正在进行的任务（已被打工仔接取）
+router.post('/master_status1',async (req, res)=>{
   var master = req.body.user_id;
   var data = {}
   data.data = {}
   var str = []
   var flag = false;
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
   var outcome = await query(missionSQL.queryAllAccepted,[master])
   for(let i=0;i<outcome.length;i++){
     str[i] = outcome[i]
@@ -373,5 +422,201 @@ router.post('/accepted',async (req, res)=>{
     data.status = 0;
   }
   responseJSON(res, data);
+})
+//雇主发布的--已完成的任务（已被打工仔确认完成）
+router.post('/master_status2',async (req, res)=>{
+  var master = req.body.user_id;
+  var data = {}
+  data.data = {}
+  var str = []
+  var flag = false;
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
+  var outcome = await query(missionSQL.queryAllDone,[master])
+  for(let i=0;i<outcome.length;i++){
+    str[i] = outcome[i]
+    flag = true;
+  }
+  if(outcome.length == 0){
+    data.msg = "暂无数据";
+    data.status = -1;
+  }else if(flag == true){
+    data.data = str;
+    data.msg = "success";
+    data.status = 0;
+  }
+  responseJSON(res, data);
+})
+//雇主发布的--已超时
+router.post('/master_status3',async (req, res)=>{
+  var master = req.body.user_id;
+  var data = {}
+  data.data = {}
+  var str = []
+  var flag = false;
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
+  var outcome = await query(missionSQL.overTime,[master])
+  for(let i=0;i<outcome.length;i++){
+    str[i] = outcome[i]
+    flag = true;
+  }
+  if(outcome.length == 0){
+    data.msg = "暂无数据";
+    data.status = -1;
+  }else if(flag == true){
+    data.data = str;
+    data.msg = "success";
+    data.status = 0;
+  }
+  responseJSON(res, data);
+})
+/* ******** 打工仔 ******** */
+//打工仔--已接取的进行中的任务
+router.post('/slave_status1', async (req, res) => {
+  var myTask = req.body;
+  var slave = myTask.user_id;
+  var _res = res;
+  var mission_statu = '';
+  var mission_id = '';
+  var data = {}
+  data.data = {}
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
+  var myMission = await query(missionSQL.getAccept, [slave])
+  var list = [];
+  var isQuery = false;
+  if (myMission) {
+    isQuery = true;
+    for (let i = 0; i < myMission.length; i++) {
+      list[i] = myMission[i]
+    }
+  }
+  if (isQuery == true) {
+    if (list.length != 0) {
+      data.data = list;
+      data.status = 0;
+      data.msg = "查询成功"
+    } else {
+      data.data = "null"
+      data.status = -1;
+      data.msg = "暂无数据"
+    }
+
+  }
+  responseJSON(_res, data);
+})
+//打工仔--已完成的任务
+router.post('/slave_status2', async (req, res) => {
+  var myTask = req.body;
+  var slave = myTask.user_id;
+  var _res = res;
+  var mission_statu = '';
+  var mission_id = '';
+  var data = {}
+  data.data = {}
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
+  var myMission = await query(missionSQL.getDone, [slave])
+  var list = [];
+  var isQuery = false;
+  if (myMission) {
+    isQuery = true;
+    for (let i = 0; i < myMission.length; i++) {
+      list[i] = myMission[i]
+    }
+  }
+  if (isQuery == true) {
+    if (list.length != 0) {
+      data.data = list;
+      data.status = 0;
+      data.msg = "查询成功"
+    } else {
+      data.data = "null"
+      data.status = -1;
+      data.msg = "暂无数据"
+    }
+
+  }
+  responseJSON(_res, data);
+})
+//打工仔--已接取但超时的任务
+router.post('/slave_status3', async (req, res) => {
+  var myTask = req.body;
+  var slave = myTask.user_id;
+  var _res = res;
+  var mission_statu = '';
+  var mission_id = '';
+  var data = {}
+  data.data = {}
+  var queryAll = await query(missionSQL.queryAllTask)
+  if (queryAll) {
+    for (let i = 0; i < queryAll.length; i++) {
+      var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      if (queryAll[i].validtime < curtime) {
+        mission_statu = 3;
+        mission_id = queryAll[i].mission_id;
+      }
+      await query(missionSQL.changeTaskStatus, [mission_statu, mission_id]);
+    }
+  }
+  var myMission = await query(missionSQL.getTime, [slave])
+  var list = [];
+  var isQuery = false;
+  if (myMission) {
+    isQuery = true;
+    for (let i = 0; i < myMission.length; i++) {
+      list[i] = myMission[i]
+    }
+  }
+  if (isQuery == true) {
+    if (list.length != 0) {
+      data.data = list;
+      data.status = 0;
+      data.msg = "查询成功"
+    } else {
+      data.data = "null"
+      data.status = -1;
+      data.msg = "暂无数据"
+    }
+
+  }
+  responseJSON(_res, data);
 })
 module.exports = router;
