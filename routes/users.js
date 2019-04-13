@@ -59,6 +59,7 @@ router.post('/enroll', async (req, res) => {
   var password = roll.password;
   var tel = roll.tel;
   var department = roll.department;
+  //var cid = roll.clientid;
   var _res = res;
   var data = {};
   const queryAll = await query(userSQL.queryAll)
