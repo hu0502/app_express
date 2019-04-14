@@ -5,7 +5,9 @@ var missionSQL = require('../db/Missionsql');
 var userSQL = require('../db/Usersql');
 var moment = require('moment');
 var utility = require("utility");
-var sms = require('../sms')
+var sms = require("../util/sms")
+/* sms */
+
 var responseJSON = function (res, ret) {
   if (typeof ret === 'undefined') {
     res.json({
@@ -151,36 +153,42 @@ router.post('/update', async (req, res) => {
   }, 300);
 });
 
-
-router.post('/sms',  (req, res) => {
-  var code = ''
-  var data = {}
-  var _res = res;
-  var phoneNumbers = [req.body.tel];
-  var aaa = parseInt(Math.random()*900000|0+100000)
-  var params =[]; 
-  var a = aaa ;
-  var b = 10;
-  params.push(a); 
-  params.push(b);
-  console.log(params)
-  //sms.seen(phoneNumbers,params,callback)
-  function callback(err, res, resData) {
-    if (err) {
-      console.log("err: ", err);
-    } else{
-      console.log(resData);
-      console.log(resData.result)
-     /*  if(resData.result==0){
-        code = aaa;
-        data.code = code;
-        data.status = 0;
-        data.msg = "success"
-      } */
+//sms
+router.post('/sms',
+  async function SMS(req, res) {
+    var data = {}
+    var _res = res;
+    var phoneNumbers = [req.body.tel];
+    var code = parseInt(Math.random() * 900000 | 0 + 100000)
+    var params = [];
+    var a = code;
+    var b = 10;
+    params.push(a);
+    params.push(b);
+    //console.log(params)
+    try {
+      await sms.seen(phoneNumbers,params,callback)   
+      function callback(err, res, resData) {
+        if (err) {
+          console.log("err: ", err);
+        }else{
+          //console.log(resData);
+          if(resData.result === 0){
+            data.code = params[0]
+            console.log(data.code)
+            data.status = 0;
+            data.msg = resData.errmsg;
+          }else{
+            data.status= resData.result;
+            data.msg = resData.errmsg;
+          }
+        }
+        responseJSON(_res, data)
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
-  
-  responseJSON(_res, data);
-});
+);
 
 module.exports = router;
