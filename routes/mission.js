@@ -27,6 +27,7 @@ router.post('/issue', async (req, res) => {
   var label = task.label;
   var location = task.location;
   var master_name = ''
+  var contact = task.contact;
   var create_time = moment().format("YYYY-MM-DD HH:mm:ss")
   var validtime = moment(task.validtime).format("YYYY-MM-DD HH:mm:ss")
   var data = {}
@@ -46,7 +47,7 @@ router.post('/issue', async (req, res) => {
       }
     }
     await query(userSQL.updateScoreById, [sss, master])
-    const str = [description, title, label, location, validtime, create_time, score, master, master_name]
+    const str = [description, title, label, location, validtime, create_time, score, master, master_name, contact]
     const issueWork = await query(missionSQL.issueWork, str)
     //不使用await 返回的issueWork是promise对象，无法获取值
     if (issueWork) {
@@ -90,7 +91,7 @@ router.post('/accept', async (req, res) => {
           await query(missionSQL.accept, str)
           data.status = 0;
           data.msg = "success",
-            data.data = "true"
+          data.data = "true"
         } else {
           data.status = -200
           data.msg = "不能接取自己发布的任务"
@@ -305,6 +306,8 @@ router.post('/recommend',async (req, res)=>{
   var arr = []
   var data = {}
   data.data = {}
+  var mission_statu = ''
+  var mission_id=''
   //未接单超时任务自动更改任务状态
   var queryAll = await query(missionSQL.queryAllTask)
   if (queryAll) {
@@ -414,6 +417,8 @@ router.post('/master_status1',async (req, res)=>{
   var master = req.body.user_id;
   var data = {}
   data.data = {}
+  var mission_statu = '';
+  var mission_id = '';
   var str = []
   var flag = false;
   var queryAll = await query(missionSQL.queryAllTask)
@@ -447,6 +452,8 @@ router.post('/master_status2',async (req, res)=>{
   var master = req.body.user_id;
   var data = {}
   data.data = {}
+  var mission_statu = '';
+  var mission_id = '';
   var str = []
   var flag = false;
   var queryAll = await query(missionSQL.queryAllTask)
@@ -480,6 +487,8 @@ router.post('/master_status3',async (req, res)=>{
   var master = req.body.user_id;
   var data = {}
   data.data = {}
+  var mission_statu = '';
+  var mission_id = '';
   var str = []
   var flag = false;
   var queryAll = await query(missionSQL.queryAllTask)

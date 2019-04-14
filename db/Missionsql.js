@@ -1,6 +1,6 @@
 var MissionSQL = {
    //发布任务
-   issueWork: 'INSERT INTO mission (mission_id,mission_order,description,title,label,mission_statu,location,validtime,create_time,score,master,master_name) values(null,round(round(rand(),10)*10000000000),?,?,?,0,?,?,?,?,?,?)',
+   issueWork: 'INSERT INTO mission (mission_id,mission_order,description,title,label,mission_statu,location,validtime,create_time,score,master,master_name,contact) values(null,round(round(rand(),10)*10000000000),?,?,?,0,?,?,?,?,?,?,?)',
    //查询任务列表
    queryAllTask:'SELECT * FROM mission',
    //任务超时则更改任务状态
