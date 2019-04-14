@@ -165,7 +165,6 @@ router.post('/sms',
     var b = 10;
     params.push(a);
     params.push(b);
-    //console.log(params)
     try {
       await sms.seen(phoneNumbers,params,callback)   
       function callback(err, res, resData) {
