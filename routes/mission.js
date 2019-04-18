@@ -28,6 +28,7 @@ router.post('/issue', async (req, res) => {
   var location = task.location;
   var master_name = ''
   var contact = task.contact;
+  //console.log(contact+"aa")
   var create_time = moment().format("YYYY-MM-DD HH:mm:ss")
   var validtime = moment(task.validtime).format("YYYY-MM-DD HH:mm:ss")
   var data = {}
@@ -47,7 +48,9 @@ router.post('/issue', async (req, res) => {
       }
     }
     await query(userSQL.updateScoreById, [sss, master])
-    const str = [description, title, label, location, validtime, create_time, score, master, master_name, contact]
+    var str = [description, title, label, location, validtime, create_time, score, master, master_name, contact]
+    //console.log(contact+"bb")
+    //console.log(str)
     const issueWork = await query(missionSQL.issueWork, str)
     //不使用await 返回的issueWork是promise对象，无法获取值
     if (issueWork) {
@@ -361,7 +364,7 @@ router.post('/recommend',async (req, res)=>{
         }
       }
       if (isQuery == true) {
-        data.data = unacceptTask;
+        data.data = unacceptTask.reverse();
         data.status = 0;
         data.msg = "查询未接单任务成功"
       }
