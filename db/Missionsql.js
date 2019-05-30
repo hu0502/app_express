@@ -41,6 +41,9 @@ var MissionSQL = {
    //打工仔已完成的任务
    getDone:'SELECT * FROM mission WHERE slave = ? and mission_statu = 2',
    //打工仔已接取但已超时的任务
-   getTime:'SELECT * FROM mission WHERE slave = ? and mission_statu = 3'
+   getTime:'SELECT * FROM mission WHERE slave = ? and mission_statu = 3',
+   //like
+   Like:'SELECT * FROM mission where label LIKE ? or location LIKE ? or title LIKE ? or description LIKE ?' 
+
 };
 module.exports = MissionSQL;

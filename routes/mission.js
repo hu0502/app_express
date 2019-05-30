@@ -303,7 +303,7 @@ router.post('/details', async (req, res) => {
   responseJSON(res, data);
 })
 //查看推荐列表
-router.post('/recommend',async (req, res)=>{
+router.post('/recommend',async (req, res) => {
   var userID = req.body.user_id;
   var max = await query(labelSQL.compared,[userID])
   var arr = []
@@ -376,6 +376,27 @@ router.post('/recommend',async (req, res)=>{
     }
    
     responseJSON(res, data);
+})
+//任务搜索
+router.post('/search',async (req, res) => {
+  var key = req.body.keywords;
+  var max = await query(missionSQL.Like,[key,key,key,key])
+  var data = {}
+  data.data = {}
+  const likeStr = []
+  var flag = false;
+  if(max){
+    for(let i = 0; i < max.length; i++){
+      likeStr[i] = max[i];
+    }
+    flag = true;
+  }
+  if(flag == true){
+    data.data = likeStr;
+    data.msg = 'success'
+    data.status=0;
+  }
+  responseJSON(res, data);
 })
 /* ******** 雇主 ******** */
 //雇主--已发布的所有未接单任务

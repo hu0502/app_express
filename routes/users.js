@@ -154,8 +154,7 @@ router.post('/update', async (req, res) => {
 });
 
 //sms
-router.post('/sms',
-  async function SMS(req, res) {
+router.post('/sms',async function SMS(req, res) {
     var data = {}
     var _res = res;
     var phoneNumbers = [req.body.tel];
