@@ -28,7 +28,6 @@ router.post('/issue', async (req, res) => {
   var location = task.location;
   var master_name = ''
   var contact = task.contact;
-  //console.log(contact+"aa")
   var create_time = moment().format("YYYY-MM-DD HH:mm:ss")
   var validtime = moment(task.validtime).format("YYYY-MM-DD HH:mm:ss")
   var data = {}
@@ -49,8 +48,6 @@ router.post('/issue', async (req, res) => {
     }
     await query(userSQL.updateScoreById, [sss, master])
     var str = [description, title, label, location, validtime, create_time, score, master, master_name, contact]
-    //console.log(contact+"bb")
-    //console.log(str)
     const issueWork = await query(missionSQL.issueWork, str)
     //不使用await 返回的issueWork是promise对象，无法获取值
     if (issueWork) {
@@ -268,12 +265,6 @@ router.post('/details', async (req, res) => {
   var mission_statu = ''
   var Times = ''
   var midIsExist = false;
-  /* var qDetail = await query(missionSQL.details, [mid])
-  var curtime = moment().format("YYYY-MM-DD HH:mm:ss");
-  if (qDetail.validtime < curtime) {
-    mission_statu = 3;
-    await query(missionSQL.changeTaskStatus, [mission_statu, mid]);
-  } */
   var queryAll = await query(labelSQL.queryAll)
   for(let i=0;i<queryAll.length;i++){
     if(queryAll[i].user_id == uid) midIsExist = true;
@@ -324,35 +315,35 @@ router.post('/recommend',async (req, res) => {
     }
   }
   for(let i=0;i<max.length;i++){
+    // 1、定义一个数组，把label表中当前用户对不同标签任务的浏览次数分别取出来 
     arr = [
       { label:'跑腿',value:max[i].help },
       { label:'代取',value:max[i].take },
       { label:'兼职',value:max[i].parttime },
       { label:'技能',value:max[i].skill },
     ]
+    // 2、使用sort对数组进行排序，由大到小
+    // 再依次获取由大到小的任务标签，赋值给like_param等四个变量
     arr.sort((a,b)=>{return b.value - a.value});
     var like_param = arr[0].label
     var second_param = arr[1].label
     var third_param = arr[2].label
     var forth_param = arr[3].label
   }
+    // 3、定义一个容器，根据刚才排序得到的标签顺序，查询任务表中所有相同任务类型的未接单任务
+    // 比如：排序得到的浏览量最高的标签为【跑腿】，现在就根据标签【跑腿】查询任务表，获取所有任务类型为【跑腿】的未接单任务
+    // 其它同理可依次获取
     var Data = []
     var top = await query(missionSQL.top,[like_param])
     var second = await query(missionSQL.top,[second_param])
     var third = await query(missionSQL.top,[third_param])
     var forth = await query(missionSQL.top,[forth_param])
-    for(let i = 0;i<top.length;i++){
-      Data.push(top[i]);
-    }
-    for(let i = 0;i<second.length;i++){
-      Data.push(second[i]);
-    }
-    for(let i = 0;i<third.length;i++){
-      Data.push(third[i]);
-    }
-    for(let i = 0;i<forth.length;i++){
-      Data.push(forth[i]);
-    }
+    // 4、把上一步查询到的列表依次添加到数组Data中，得到排序后的任务列表
+    for(let i = 0;i<top.length;i++){ Data.push(top[i]); }
+    for(let i = 0;i<second.length;i++){ Data.push(second[i]); }
+    for(let i = 0;i<third.length;i++){ Data.push(third[i]); }
+    for(let i = 0;i<forth.length;i++){ Data.push(forth[i]); }
+    // 5、如果用户登陆但没有产生浏览记录，重新查询任务表，默认按时间顺序显示
     if(Data.length ==0){
       var task = await query(missionSQL.queryAllStatu);
       var unacceptTask = [];
@@ -368,7 +359,7 @@ router.post('/recommend',async (req, res) => {
         data.status = 0;
         data.msg = "查询未接单任务成功"
       }
-
+    // 6、如果产生了权重，继续返回排序后的任务列表
     }else{
       data.data = Data;
       data.status = 0;
