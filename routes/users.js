@@ -62,7 +62,7 @@ router.post('/enroll', async (req, res) => {
   var password = roll.password;
   var tel = roll.tel;
   var department = roll.department;
-  //var cid = roll.clientid;
+  var cid = roll.clientid;
   var _res = res;
   var data = {};
   const queryAll = await query(userSQL.queryAll)
@@ -83,7 +83,7 @@ router.post('/enroll', async (req, res) => {
     data.status = -2;
     data.msg = "用户名已存在"
   } else {
-    await query(userSQL.enroll, [user_name, password, tel, department])
+    await query(userSQL.enroll, [user_name, password, tel, department,cid])
     data.status = 0;
     data.msg = "注册成功"
   }
